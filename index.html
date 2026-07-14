@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>En Yakın Migros Bul</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .widget-container {
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+    }
+
+    /* ── ANA BUTON ── */
+    .find-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #ff6b35 0%, #e8261e 100%);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 18px 36px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      box-shadow: 0 8px 30px rgba(232, 38, 30, 0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .find-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      border-radius: inherit;
+    }
+
+    .find-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(232, 38, 30, 0.5);
+    }
+
+    .find-btn:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    .find-btn:disabled {
+      background: linear-gradient(135deg, #aaa 0%, #888 100%);
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-icon {
+      font-size: 20px;
+      animation: pulse-icon 2s infinite;
+    }
+
+    @keyframes pulse-icon {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    /* ── SPINNER ── */
+    .spinner {
+      display: none;
+      width: 22px;
+      height: 22px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── SONUÇ KARTI ── */
+    .result-card {
+      display: none;
+      margin-top: 20px;
+      background: linear-gradient(145deg, #fff8f7, #fff);
+      border: 1.5px solid rgba(232, 38, 30, 0.15);
+      border-radius: 20px;
+      padding: 24px 20px 20px;
+      box-shadow: 0 10px 40px rgba(232, 38, 30, 0.1);
+      animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-align: left;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff6b35, #e8261e);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 20px;
+      padding: 4px 12px;
+      margin-bottom: 12px;
+    }
+
+    .result-store-name {
+      font-size: 20px;
+      font-weight: 900;
+      color: #1a1a1a;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    .result-address {
+      font-size: 13px;
+      color: #777;
+      line-height: 1.5;
+      margin-bottom: 4px;
+    }
+
+    .result-distance {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e8261e;
+      margin-bottom: 16px;
+    }
+
+    /* ── NAVİGASYON BUTONLARI ── */
+    .nav-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .nav-btn-google {
+      background: #4285F4;
+      color: white;
+      box-shadow: 0 4px 15px rgba(66, 133, 244, 0.35);
+    }
+
+    .nav-btn-yandex {
+      background: #FC3F1D;
+      color: white;
+      box-shadow: 0 4px 15px rgba(252, 63, 29, 0.35);
+    }
+
+    .nav-btn-apple {
+      background: #000;
+      color: white;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    }
+
+    /* ── HATA ── */
+    .error-msg {
+      display: none;
+      margin-top: 14px;
+      background: #fff3f3;
+      border: 1px solid #ffcdd2;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #c62828;
+      line-height: 1.5;
+    }
+
+    /* ── BARBEKING NOTU ── */
+    .bk-note {
+      margin-top: 14px;
+      font-size: 11px;
+      color: #aaa;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<div class="widget-container">
+
+  <button class="find-btn" id="findBtn" onclick="findNearest()">
+    <span class="btn-icon">📍</span>
+    <span id="btnText">Barbeking'in En Yakın Migrос'unu Bul!</span>
+    <span class="spinner" id="spinner"></span>
+  </button>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="result-card" id="resultCard">
+    <span class="result-badge">📍 En Yakın Migros</span>
+    <div class="result-store-name" id="storeName"></div>
+    <div class="result-address" id="storeAddress"></div>
+    <div class="result-distance" id="storeDistance"></div>
+
+    <div class="nav-buttons">
+      <a class="nav-btn nav-btn-google" id="googleMapsBtn" href="#" target="_blank" rel="noopener">
+        🗺️ Google Maps ile Yol Tarifi Al
+      </a>
+      <a class="nav-btn nav-btn-yandex" id="yandexBtn" href="#" target="_blank" rel="noopener">
+        🧭 Yandex Haritalar ile Git
+      </a>
+      <a class="nav-btn nav-btn-apple" id="appleBtn" href="#" target="_blank" rel="noopener">
+        🍎 Apple Maps ile Git
+      </a>
+    </div>
+  </div>
+
+  <div class="bk-note">Barbeking ürünlerimizi bu Migros şubelerinde bulabilirsiniz.</div>
+
+</div>
+
+<script>
+  // ── MAĞAZA VERİLERİ (Excel'den dönüştürüldü) ──────────────────────────────
+  const STORES = [
+    {"name":"ATRIUM MMM MİGROS","address":"9.-10.Kısım Atrium Alışveriş Merkezi Ataköy BAKIRKÖY/İSTANBUL","city":"İSTANBUL","lat":40.988787,"lng":28.846042},
+    {"name":"BAHÇEŞEHİR MMM MİGROS","address":"Bahçeşehir 2.Kısım Mah. BAŞAKŞEHİR/İSTANBUL","city":"İSTANBUL","lat":41.06055,"lng":28.68736},
+    {"name":"CADDEBOSTAN MMM MİGROS","address":"Caddebostan Mah.Opr.Cemil Topuzlu Cad NO:136 KADIKÖY/İSTANBUL","city":"İSTANBUL","lat":40.96364,"lng":29.06496},
+    {"name":"5M BEYLİKDÜZÜ","address":"Barış Mah. Sakarya Cad. Dış Kapı no:1 İç kapı no:1 BEYLİKDÜZÜ/İSTANBUL","city":"İSTANBUL","lat":41.006844,"lng":28.657429},
+    {"name":"ATAŞEHİR MMM MİGROS","address":"Atatürk Mahallesi Ataşehir Bulvarı No: 18/1 ATAŞEHİR/İSTANBUL","city":"İSTANBUL","lat":40.991963,"lng":29.126373},
+    {"name":"NİŞPETİYE MMM MİGROS","address":"1.Levent Nispetiye Mah.Aytar Cad.Başlık Sok.NO=1 BEŞİKTAŞ/İSTANBUL","city":"İSTANBUL","lat":41.0752,"lng":29.01921},
+    {"name":"AKMERKEZ MACROCENTER","address":"Akmerkez F Blok NO:325 Etiler Mah BEŞİKTAŞ/İSTANBUL","city":"İSTANBUL","lat":41.076834,"lng":29.027593},
+    {"name":"ALKENT MACROCENTER","address":"TEM 8 Hadımköy Gişeler Mevkii 2.KM Alkent Yeditepe ESENYURT/İSTANBUL","city":"İSTANBUL","lat":41.077639,"lng":28.623124},
+    {"name":"KEMER COUNTRY MACROCENTER","address":"Göktürk Mah. Kemerburgaz Yolu Kemer Country EYÜP/İSTANBUL","city":"İSTANBUL","lat":41.176266,"lng":28.900478},
+    {"name":"ONUR ÇARŞAMBA MACROCENTER","address":"Onur Mah. Yenibosna Blv. NO:6 BAHÇELİEVLER/İSTANBUL","city":"İSTANBUL","lat":40.999505,"lng":28.821163},
+    {"name":"SABİHA GÖKÇEN MACROCENTER","address":"Sabiha Gökçen Havalimanı Uçuş Yan Yolu PENDİK/İSTANBUL","city":"İSTANBUL","lat":40.901745,"lng":29.310773},
+    {"name":"KANYON MACROCENTER","address":"Büyükdere Cad.NO:185 Kanyon AVM Levent MAH. ŞİŞLİ/İSTANBUL","city":"İSTANBUL","lat":41.079738,"lng":29.010777},
+    {"name":"AKADEMİ MACROCENTER","address":"Akademi Mah.Yakuplu Cd.NO:67 BEYLİKDÜZÜ/İSTANBUL","city":"İSTANBUL","lat":40.988636,"lng":28.667584},
+    {"name":"FORUM İSTANBUL MACROCENTER","address":"Kocatepe Mah. Paşa Yolu Sok. No:1-B (Forum İst. AVM) BAYRAMPAŞA/İSTANBUL","city":"İSTANBUL","lat":41.053284,"lng":28.908278},
+    {"name":"EMİRGAN MMM MİGROS","address":"İstinye Mah. Gül Sokak NO:1/A SARIYER/İSTANBUL","city":"İSTANBUL","lat":41.108478,"lng":29.050668},
+    {"name":"İSTANBUL HAVALIMANINA MİGROS","address":"Tayakadın Mah. Terminal Cad. No:1 İstanbul Havalimanı ARNAVUTKÖY/İSTANBUL","city":"İSTANBUL","lat":41.26296,"lng":28.741638},
+    {"name":"BEYOĞLU MMM MİGROS","address":"Meşrutiyet Cad.No:171 BEYOSlu/İSTANBUL","city":"İSTANBUL","lat":41.030884,"lng":28.981498},
+    {"name":"BEŞYÜZEVLER MMM MİGROS","address":"Çırpıcı Mah. E-5 Yolu Cad.N:2 ZEYTINBURNU/İSTANBUL","city":"İSTANBUL","lat":41.015701,"lng":28.898779},
+    {"name":"KOZYATAĞI MMM MİGROS","address":"Kozyatağı Mah. Değirmenyolu Cad.No:23 KADIKÖY/İSTANBUL","city":"İSTANBUL","lat":40.976929,"lng":29.102613},
+    {"name":"AQUA FLORYA MACROCENTER","address":"Florya Mah. Şenlikköy Yolu No:5 KÜÇÜKÇEKMECE/İSTANBUL","city":"İSTANBUL","lat":40.977001,"lng":28.795784},
+    {"name":"GEBZE CENTER MACROCENTER","address":"Gebze Center AVM Mithatpaşa Mah. İstanbul Cad. No:14 GEBZE/KOCAELİ","city":"KOCAELİ","lat":40.80088,"lng":29.42694},
+    {"name":"İZMİT MMM MİGROS","address":"Değirmendere Mah. İstanbul Cad. No:7 İZMİT/KOCAELİ","city":"KOCAELİ","lat":40.778046,"lng":29.93893},
+    {"name":"D.S.C. MACROCENTER","address":"Deniz Sanayi Cd. No:143 KÖRFEZ/KOCAELİ","city":"KOCAELİ","lat":40.762044,"lng":29.763895},
+    {"name":"TEKİRDAĞ MMM MİGROS","address":"Hürriyet Mah.İstanbul Cad.No:119 TEKİRDAĞ","city":"TEKİRDAĞ","lat":40.990696,"lng":27.511588},
+    {"name":"ÇORLU MMM MİGROS","address":"Çerkezköy Cad.1 NO:53 ÇORLU/TEKİRDAĞ","city":"TEKİRDAĞ","lat":41.155869,"lng":27.78661},
+    {"name":"EDİRNE MMM MİGROS","address":"Sabuni Mah. Cisr-I Mustafapaşa Cad. EDİRNE","city":"EDİRNE","lat":41.666906,"lng":26.558268},
+    {"name":"KIYIKENT MMM MİGROS","address":"Kiyikent Tatil Köyü No:1 KEŞAN/EDİRNE","city":"EDİRNE","lat":40.596491,"lng":26.588263},
+    {"name":"BURSA MMM MİGROS","address":"Zafer Plaza Altıparmak Cad.No:35 NİLÜFER/BURSA","city":"BURSA","lat":40.195239,"lng":29.064555},
+    {"name":"BURSA KORUPARK MACROCENTER","address":"Korupark AVM Bağlarbaşı Mah. Hürriyet Cad. No:1 OSMANGAZİ/BURSA","city":"BURSA","lat":40.183003,"lng":29.055066},
+    {"name":"YALOVA MMM MİGROS","address":"Süleyman Bey Mah. Atatürk Cad. No:34-36 YALOVA","city":"YALOVA","lat":40.649803,"lng":29.268048},
+    {"name":"ÇANAKKALE MMM MİGROS","address":"Kayserili Ahmetpaşa Mah.İskele Meydanı No:5 ÇANAKKALE","city":"ÇANAKKALE","lat":40.156547,"lng":26.406508},
+    {"name":"BALIKESİR MMM MİGROS","address":"Bahçelievler Mah. Cumhuriyet Cad.No:48 BALIKESİR","city":"BALIKESİR","lat":39.649085,"lng":27.882979},
+    {"name":"AYVALİK MMM MİGROS","address":"Yat Limanı Atatürk Bul.No:68/A AYVALİK/BALIKESİR","city":"BALIKESİR","lat":39.318793,"lng":26.695855},
+    {"name":"BANDIRMA MMM MİGROS","address":"Yeni Mah.Atatürk Cad.No:73/B BANDIRMA/BALIKESİR","city":"BALIKESİR","lat":40.338555,"lng":27.972597},
+    {"name":"ÇANDIR MMM MİGROS","address":"Çandır Mah. Güzelyurt Mevkii sis No:26 ERDEK/BALIKESİR","city":"BALIKESİR","lat":40.439437,"lng":27.817483},
+    {"name":"EDREMİT MMM MİGROS","address":"Atatürk Bulv. NO:4/A EDREMİT/BALIKESİR","city":"BALIKESİR","lat":39.594024,"lng":27.022083},
+    {"name":"GÖNEN MMM MİGROS","address":"Atatürk Cad.No:71 GÖNEN/BALIKESİR","city":"BALIKESİR","lat":40.097099,"lng":27.651386},
+    {"name":"SAKARYA MMM MİGROS","address":"Mithatpaşa Mah. İstanbul Cad. No:16 ADAPAZARI/SAKARYA","city":"SAKARYA","lat":40.768268,"lng":30.394565},
+    {"name":"MANİSA MMM MİGROS","address":"Mareşal Fevzi Çakmak Mahallesi Doğu Caddesi No:92 MANİSA","city":"MANİSA","lat":38.612413,"lng":27.434066},
+    {"name":"AFYONKARAHİSAR MMM MİGROS","address":"Ordu Bulvarı No:58 AFYONKARAHİSAR","city":"AFYON","lat":38.754617,"lng":30.544086},
+    {"name":"DENİZLİ MMM MİGROS","address":"Bağlarbaşı Mah. Şirinköy Yolu Cad. No:29 DENİZLİ","city":"DENİZLİ","lat":37.769268,"lng":29.087396},
+    {"name":"AYDIN MMM MİGROS","address":"Ramazanpaşa Mah.Adnan Menderes Bulvarı No:56 EFELER/AYDIN","city":"AYDIN","lat":37.850888,"lng":27.843413},
+    {"name":"ÇEŞME MACROCENTER","address":"Çeşme Mah. İzmir Cad. No:18 ÇEŞME/İZMİR","city":"İZMİR","lat":38.319069,"lng":26.303266},
+    {"name":"KUŞADASI MMM MİGROS","address":"Kaleiçi Mah.Atatürk Bulvarı No:33 KUŞADASI/AYDIN","city":"AYDIN","lat":37.861014,"lng":27.262285},
+    {"name":"DİDİM MMM MİGROS","address":"Efeler Mah. Atatürk Blv. No:65/A DİDİM/AYDIN","city":"AYDIN","lat":37.35792,"lng":27.26851},
+    {"name":"SÖKE MMM MİGROS","address":"Tepecik Mah. Ege Cad. No:78 SÖKE/AYDIN","city":"AYDIN","lat":37.748737,"lng":27.408038},
+    {"name":"SELÇUK MMM MİGROS","address":"Atatürk Mah. 1003 Sok. No:2 SELÇUK/İZMİR","city":"İZMİR","lat":37.949929,"lng":27.368595},
+    {"name":"ALSANCERİ MMM MİGROS","address":"Alsancak Mah.Kıbrıs Şehitleri Cad.No:124 KONAK/İZMİR","city":"İZMİR","lat":38.44018,"lng":27.13921},
+    {"name":"BALÇOVA MMM MİGROS","address":"Teleferik Mah.Onur Sok.No:3 BALÇOVA/İZMİR","city":"İZMİR","lat":38.37617,"lng":27.06124},
+    {"name":"BORNOVA MMM MİGROS","address":"Atatürk Cad. No:164 BORNOVA/İZMİR","city":"İZMİR","lat":38.45949,"lng":27.22143},
+    {"name":"BOSTANLI MMM MİGROS","address":"Mehmetçik Cad.No:67 KARŞIYAKA/İZMİR","city":"İZMİR","lat":38.47117,"lng":27.10671},
+    {"name":"ÇAMLIK MMM MİGROS","address":"Çamlik Mah.1435 Sok.No:14 BUCA/İZMİR","city":"İZMİR","lat":38.38153,"lng":27.17066},
+    {"name":"FORUM BORNOVA MACROCENTER","address":"Ankara Cad. No:65 BORNOVA/İZMİR","city":"İZMİR","lat":38.44844,"lng":27.20584},
+    {"name":"İZMİR OPTIMUM MACROCENTER","address":"Folkart Optımum AVM 8006 Sok.No:1 BORNOVA/İZMİR","city":"İZMİR","lat":38.428799,"lng":27.218},
+    {"name":"KARATAŞ MMM MİGROS","address":"Ankara Cad. No:220 BORNOVA/İZMİR","city":"İZMİR","lat":38.452885,"lng":27.178421},
+    {"name":"MAVIŞEHIR MMM MİGROS","address":"Mustafa Kemal Cad. No:42/A KARŞIYAKA/İZMİR","city":"İZMİR","lat":38.47505,"lng":27.07854},
+    {"name":"NECATİBEY MMM MİGROS","address":"Alsancak Mah.Necatibey Bulv.No:65/A KONAK/İZMİR","city":"İZMİR","lat":38.43584,"lng":27.14706},
+    {"name":"NEOPOLIS MMM MİGROS","address":"Neopolis AVM Pınarbaşı Mah.Ankara Cad.No:600 BORNOVA/İZMİR","city":"İZMİR","lat":38.42974,"lng":27.28748},
+    {"name":"TORBALII MMM MİGROS","address":"Fevzi Çakmak Mah. İzmir Cad. No:170 TORBALI/İZMİR","city":"İZMİR","lat":38.15993,"lng":27.35698},
+    {"name":"ÜÇKUYULAR MACROCENTER","address":"Üçkuyular Mah.Mithatpaşa Cad.No:246 GÜZELBAHÇE/İZMİR","city":"İZMİR","lat":38.38854,"lng":27.04737},
+    {"name":"YAMANLAR MMM MİGROS","address":"Gazi Mah.Ankara Cad.No:174/A BORNOVA/İZMİR","city":"İZMİR","lat":38.455,"lng":27.1985},
+    {"name":"KONYA MMM MİGROS","address":"Karatay Mah. Mevlana Cad.No:4 KARATAY/KONYA","city":"KONYA","lat":37.869778,"lng":32.493534},
+    {"name":"KONYA KENTPLUS MMM MİGROS","address":"Fevzi Çakmak Mah. Beyşehir Cad. No:26/C KARATAY/KONYA","city":"KONYA","lat":37.829025,"lng":32.442289},
+    {"name":"ESKİŞEHİR MMM MİGROS","address":"71 Evler Mah. Şeker Cad. No:80/A ESKİŞEHİR","city":"ESKİŞEHİR","lat":39.758143,"lng":30.525903},
+    {"name":"ANKARA 1 MMM MİGROS","address":"Emek Mah.Akdeniz Cad.No:68 ÇANKAYA/ANKARA","city":"ANKARA","lat":39.879059,"lng":32.797097},
+    {"name":"ANKARA 2 MMM MİGROS","address":"Bahçelievler Mah. 65.Sok.No:22 ÇANKAYA/ANKARA","city":"ANKARA","lat":39.894485,"lng":32.811398},
+    {"name":"ANKARA 3 MMM MİGROS","address":"Bahçelievler 3.Cad. No:60 ÇANKAYA/ANKARA","city":"ANKARA","lat":39.884754,"lng":32.813068},
+    {"name":"ANKARA 5 MMM MİGROS","address":"Söğütözü Mah. Ankara-Konya Karayolu No:25 ÇANKAYA/ANKARA","city":"ANKARA","lat":39.883218,"lng":32.760695},
+    {"name":"ANKARA 6 MMM MİGROS","address":"Bağlıca Mah. İzmir Cad. No:30/A ETİMESGUT/ANKARA","city":"ANKARA","lat":39.918997,"lng":32.634804},
+    {"name":"ANKARA 7 MMM MİGROS","address":"Konutkent 3 Mah. Konutkent Cad. No:1/A ÇANKAYA/ANKARA","city":"ANKARA","lat":39.868736,"lng":32.716988},
+    {"name":"ANKARA 8 MMM MİGROS","address":"Ahmet Taner Kışlalı Cad. No:5 ÇANKAYA/ANKARA","city":"ANKARA","lat":39.855003,"lng":32.714543},
+    {"name":"ANKARA 9 MMM MİGROS","address":"Turan Güneş Blv.No:63 ÇANKAYA/ANKARA","city":"ANKARA","lat":39.872143,"lng":32.781143},
+    {"name":"ANKARA 10 MMM MİGROS","address":"Çetin Emeç Bul. No:125/A ÇANKAYA/ANKARA","city":"ANKARA","lat":39.93028,"lng":32.80695},
+    {"name":"ANKARA 11 MMM MİGROS","address":"Emek Mah. Kızılırmak Cad. No:46/A ÇANKAYA/ANKARA","city":"ANKARA","lat":39.879376,"lng":32.789596},
+    {"name":"ANKARA 13 MMM MİGROS","address":"Harikalar Diyarı AVM Battalgazi Mah. Alparslan Bul. No:1 MAMAK/ANKARA","city":"ANKARA","lat":39.921303,"lng":32.901929},
+    {"name":"ANKARA 14 MMM MİGROS","address":"Kavaklıdere Mah. Atatürk Bulvarı No:183 ÇANKAYA/ANKARA","city":"ANKARA","lat":39.898651,"lng":32.861006},
+    {"name":"ANKARA 15 MMM MİGROS","address":"İvedik Mah. Anadolu Blv. No:55 YENİMAHALLE/ANKARA","city":"ANKARA","lat":39.984726,"lng":32.783659},
+    {"name":"ANKARA 16 MMM MİGROS","address":"Demetevler Mah. Anadolu Cad. No:93 YENİMAHALLE/ANKARA","city":"ANKARA","lat":39.973038,"lng":32.750895},
+    {"name":"ANKARA 17 MMM MİGROS","address":"Koru Mah.Ufuk Üniversitesi Cad. No:6 ÇANKAYA/ANKARA","city":"ANKARA","lat":39.834597,"lng":32.659049},
+    {"name":"ANKARA 18 MMM MİGROS","address":"Oran Mah. Kudüs Cad. No:13 ÇANKAYA/ANKARA","city":"ANKARA","lat":39.843756,"lng":32.765884},
+    {"name":"ANKARA MACROCENTER","address":"Akköprü Mah.Söğütözü Cad.No:2 ÇANKAYA/ANKARA","city":"ANKARA","lat":39.895985,"lng":32.804266},
+    {"name":"MALATYA MMM MİGROS","address":"Hamidiye Mah. İsmet İnönü Cad. No:4 MALATYA","city":"MALATYA","lat":38.351818,"lng":38.317553},
+    {"name":"DİYARBAKIR MMM MİGROS","address":"Bağlar Mah. İstasyon Cad. No:176 BAĞLAR/DİYARBAKIR","city":"DİYARBAKIR","lat":37.914978,"lng":40.228081},
+    {"name":"DİYARBAKIR FORUM MACROCENTER","address":"Forum Diyarbakır AVM Yenişehir/DİYARBAKIR","city":"DİYARBAKIR","lat":37.935379,"lng":40.249413},
+    {"name":"GAZİANTEP MMM MİGROS","address":"Şahinbey Mah. Suburcu Cad. No:41 ŞAHİNBEY/GAZİANTEP","city":"GAZİANTEP","lat":37.064484,"lng":37.382042},
+    {"name":"GAZİANTEP 2 MACROCENTER","address":"Bağlarbaşı Mah. Atatürk Blv. No:78 GAZİANTEP","city":"GAZİANTEP","lat":37.075555,"lng":37.369218},
+    {"name":"KAYSERİ MMM MİGROS","address":"Seyyid Burhaneddin Mah. Talas Cad. No:22 MELİKGAZİ/KAYSERİ","city":"KAYSERİ","lat":38.713379,"lng":35.489296},
+    {"name":"NEVŞEHİR MMM MİGROS","address":"Ragıp Üner Cad.No:2 NEVŞEHİR","city":"NEVŞEHİR","lat":38.620944,"lng":34.717396},
+    {"name":"SAMSUN MMM MİGROS","address":"İstasyon Mah. Cumhuriyet Meydanı No:1 İLKADIM/SAMSUN","city":"SAMSUN","lat":41.286348,"lng":36.331558},
+    {"name":"ANTALYA MACROCENTER","address":"Kızılsaray Mah.Atatürk Cad.No:70 MURATPAŞA/ANTALYA","city":"ANTALYA","lat":36.886592,"lng":30.693866},
+    {"name":"ALANYA MMM MİGROS","address":"İskele Mah.Güllerpınarı Cad.No:22 ALANYA/ANTALYA","city":"ANTALYA","lat":36.542568,"lng":32.001175},
+    {"name":"ALANYA MACROCENTER","address":"Şekerhane Mah. Hürriyet Cad. No:2 ALANYA/ANTALYA","city":"ANTALYA","lat":36.557009,"lng":31.995388},
+    {"name":"BELEK MMM MİGROS","address":"Kadriye Mah. Belek Cad.No:14 SERIK/ANTALYA","city":"ANTALYA","lat":36.857088,"lng":31.055906},
+    {"name":"FINIKE MMM MİGROS","address":"Çarşı Mah.Sağlık Cad.No:48 FİNİKE/ANTALYA","city":"ANTALYA","lat":36.297908,"lng":30.14753},
+    {"name":"KEMER MMM MİGROS","address":"Yeni Mah.Atatürk Bulvarı No:70/A KEMER/ANTALYA","city":"ANTALYA","lat":36.605015,"lng":30.556073},
+    {"name":"KONYAALTI MMM MİGROS","address":"Sarısu Mah. Akdeniz Bul.No:49 KONYAALTI/ANTALYA","city":"ANTALYA","lat":36.854218,"lng":30.573524},
+    {"name":"KONYAALTI MACROCENTER","address":"Liman Mah.Dumlupınar Blv.No:190 KONYAALTI/ANTALYA","city":"ANTALYA","lat":36.871869,"lng":30.596551},
+    {"name":"KUMLUCA MMM MİGROS","address":"Merkez Mah. Atatürk Cad. No:4 KUMLUCA/ANTALYA","city":"ANTALYA","lat":36.366571,"lng":30.288125},
+    {"name":"LARA MMM MİGROS","address":"Fener Mah.Aspendos Bul.No:82/A MURATPAŞA/ANTALYA","city":"ANTALYA","lat":36.863576,"lng":30.726804},
+    {"name":"MAVİ MMM MİGROS","address":"Şirinyalı Mah. Lara Cad. No:146 MURATPAŞA/ANTALYA","city":"ANTALYA","lat":36.851166,"lng":30.720296},
+    {"name":"SİDELİ MMM MİGROS","address":"Selimiye Mah. 1115. Sok. No:1/A/B/C/D MANAVGATı/ANTALYA","city":"ANTALYA","lat":36.746082,"lng":31.389702},
+    {"name":"TERRA CITY MACROCENTER","address":"Yeşilbahçe Mah. Atatürk Cad. No:1 MURATPAŞA/ANTALYA","city":"ANTALYA","lat":36.87737,"lng":30.64856},
+    {"name":"TÜNEKTEPE MMM MİGROS","address":"Çağlayan Mah.Barınaklar Bul.No:6 MURATPAŞA/ANTALYA","city":"ANTALYA","lat":36.869659,"lng":30.708498},
+    {"name":"MERSİN MMM MİGROS","address":"Çankaya Mah. Atatürk Cad. No:76 YENİŞEHİR/MERSİN","city":"ÇEL","lat":36.79607,"lng":34.63133},
+    {"name":"ADANA MACROCENTER","address":"Kurtuluş Mah. Turhan Cemal Beriker Blv.No:165 SEYHAN/ADANA","city":"ÇEL","lat":36.988208,"lng":35.341428},
+    {"name":"BODRUM MACROCENTER","address":"Kıbrıs Şehitleri Cad. No:11 BODRUM/MUĞLA","city":"MUĞLA","lat":37.033944,"lng":27.427614},
+    {"name":"BODRUM OASIS MACROCENTER","address":"Turgutreis Mah. Kıbrıs Şehitleri Cad.No:32 BODRUM/MUĞLA","city":"MUĞLA","lat":37.028534,"lng":27.423543},
+    {"name":"BODRUM SALMAKIS MACROCENTER","address":"Kumbahçe Mah. Neyzen Tevfik Cad. No:42 BODRUM/MUĞLA","city":"MUĞLA","lat":37.037069,"lng":27.427893},
+    {"name":"DATÇA MMM MİGROS","address":"İskele Mah.Atatürk Cad. No:55 DATÇA/MUĞLA","city":"MUĞLA","lat":36.726244,"lng":27.686413},
+    {"name":"FETHİYE MMM MİGROS","address":"Pınarbaşı Mah. Çarşı Cad.No:12 FETHİYE/MUĞLA","city":"MUĞLA","lat":36.619671,"lng":29.121247},
+    {"name":"FETHİYE MACROCENTER","address":"Cumhuriyet Mah. Ordu Cad. No:41 FETHİYE/MUĞLA","city":"MUĞLA","lat":36.621505,"lng":29.128083},
+    {"name":"GÖCEK MMM MİGROS","address":"Cumhuriyet Mah. Atatürk Cad. No:72 GÖCEK/MUĞLA","city":"MUĞLA","lat":36.754059,"lng":28.93561},
+    {"name":"GÜMBET MMM MİGROS","address":"Küçükbük Mah. Gümbet Cad. No:19 BODRUM/MUĞLA","city":"MUĞLA","lat":37.023588,"lng":27.398765},
+    {"name":"GÜMÜŞLÜK MMM MİGROS","address":"Kadıkalesi Mah. Gümüşlük Cad.No:12 BODRUM/MUĞLA","city":"MUĞLA","lat":37.040985,"lng":27.248889},
+    {"name":"GÜVERCINLIK MMM MİGROS","address":"Güvercinlik Mah. Milas Yolu No:24 BODRUM/MUĞLA","city":"MUĞLA","lat":37.053419,"lng":27.522247},
+    {"name":"HAVZA MMM MİGROS","address":"Kızılağaç Mah. Havza Mevkii Şükrü Uçar Cad. No:5 MARMARİS/MUĞLA","city":"MUĞLA","lat":36.864887,"lng":28.285567},
+    {"name":"İÇMELER MMM MİGROS","address":"Atatürk Cad. No:4 İÇMELER/MUĞLA","city":"MUĞLA","lat":36.79478,"lng":28.16},
+    {"name":"KARABAĞLAR MMM MİGROS","address":"Karabağlar Mah.Uluturk Cad.No:13 BODRUM/MUĞLA","city":"MUĞLA","lat":37.012001,"lng":27.411889},
+    {"name":"MARMARIS MMM MİGROS","address":"Tepe Mah.Atatürk Cad.No:15 MARMARİS/MUĞLA","city":"MUĞLA","lat":36.857491,"lng":28.267},
+    {"name":"MARMARIS MACROCENTER","address":"Kemeraltı Mah.Ulusal Egemenlik Cad.No:104 MARMARİS/MUĞLA","city":"MUĞLA","lat":36.854455,"lng":28.270584},
+    {"name":"MİLAS MMM MİGROS","address":"Hayıtlıbük Mah. Urla Cad. No:8 MİLAS/MUĞLA","city":"MUĞLA","lat":37.314854,"lng":27.778673},
+    {"name":"MUĞLA MACROCENTER","address":"Karaçay Mah. Menteşe Cad.No:1 MENTEŞE/MUĞLA","city":"MUĞLA","lat":37.213448,"lng":28.357983},
+    {"name":"ORTACA MMM MİGROS","address":"Cumhuriyet Mah. Atatürk Cad.No:29 ORTACA/MUĞLA","city":"MUĞLA","lat":36.839019,"lng":28.763903},
+    {"name":"TURGUTREIS MMM MİGROS","address":"Karatoprak Mah. Turgutreis Cad. No:21 BODRUM/MUĞLA","city":"MUĞLA","lat":37.016295,"lng":27.264879},
+    {"name":"TÜRKBÜKÜ MMM MİGROS","address":"Türkbükü Mah.Türkbükü Cad.No:132 BODRUM/MUĞLA","city":"MUĞLA","lat":37.105099,"lng":27.390516},
+    {"name":"YALIKANOT MMM MİGROS","address":"Yalıkavak Mah. Kocadon Cad. BODRUM/MUĞLA","city":"MUĞLA","lat":37.104538,"lng":27.289327},
+    {"name":"YALIKAVAK MMM MİGROS","address":"Yalıkavak Mah. Palmarina Yanı BODRUM/MUĞLA","city":"MUĞLA","lat":37.107617,"lng":27.290534},
+    {"name":"ORTAKENT MACROCENTER","address":"Ortakent Yahşi Mah. Atatürk Cad. No:62 BODRUM/MUĞLA","city":"MUĞLA","lat":37.011986,"lng":27.328553},
+    {"name":"KARABAĞLAR MACROCENTER","address":"Yıldız Mah. Bağcılar Cad. No:19-23 BODRUM/MUĞLA","city":"MUĞLA","lat":37.011864,"lng":27.412424},
+    {"name":"GAZİPAŞA MACROCENTER","address":"Gazipaşa Mah. Cumhuriyet Cad. No:2 GAZİPAŞA/ANTALYA","city":"ANTALYA","lat":36.268715,"lng":32.318042},
+    {"name":"BÜYÜKÇEKMECE MMM MİGROS","address":"Cumhuriyet Mah. D-100 Karayolu No:143 BÜYÜKÇEKMECE/İSTANBUL","city":"İSTANBUL","lat":41.020208,"lng":28.578671},
+    {"name":"İSTİNYE MMM MİGROS","address":"İstinye Mah. Çayırbaşı Cad.No:57 SARIYER/İSTANBUL","city":"İSTANBUL","lat":41.116095,"lng":29.049285},
+    {"name":"GÖZTEPE MMM MİGROS","address":"Zuhuratbaba Mah. Ahmet Yesevi Cad. No:25/C BAKIRKÖY/İSTANBUL","city":"İSTANBUL","lat":41.002516,"lng":28.866918},
+    {"name":"ESENYURT MMM MİGROS","address":"Mehmet Akif Mah. Fatih Cad. No:55/C ESENYURT/İSTANBUL","city":"İSTANBUL","lat":41.032631,"lng":28.671052},
+    {"name":"PENDIK MMM MİGROS","address":"Yenişehir Mah. Ankara Cad. No:57/A PENDİK/İSTANBUL","city":"İSTANBUL","lat":40.872614,"lng":29.245735},
+    {"name":"SİLİVRİ MMM MİGROS","address":"Alibey Mah. Yalı Cad. No:62 SİLİVRİ/İSTANBUL","city":"İSTANBUL","lat":41.069919,"lng":28.246137},
+    {"name":"SULTANBEYLİ MMM MİGROS","address":"Battalgazi Mah. Ankara Cad. No:29/1 SULTANBEYLİ/İSTANBUL","city":"İSTANBUL","lat":40.957614,"lng":29.260199},
+    {"name":"ÜMRANIYE MMM MİGROS","address":"Elmalikent Mah. Atatürk Cad. No:58 ÜMRANİYE/İSTANBUL","city":"İSTANBUL","lat":41.022879,"lng":29.128791},
+    {"name":"SANCAKTEPE MMM MİGROS","address":"19 Mayıs Mah. Dr. Suphi Ezgi Cad. No:72 SANCAKTEPE/İSTANBUL","city":"İSTANBUL","lat":41.001985,"lng":29.230131},
+    {"name":"KARTAL MMM MİGROS","address":"Hürriyet Mah. İstanbul Cad. No:9 KARTAL/İSTANBUL","city":"İSTANBUL","lat":40.894344,"lng":29.183769},
+    {"name":"ÇAMLIK MMM MİGROS 2","address":"Çamlık Mah. Orhantepe Blv. No:4 BAYRAMPAŞA/İSTANBUL","city":"İSTANBUL","lat":41.044,"lng":28.889},
+    {"name":"TUZLA MACROCENTER","address":"Postane Mah. E-5 Karayolu No:193 TUZLA/İSTANBUL","city":"İSTANBUL","lat":40.849766,"lng":29.300987},
+    {"name":"ÇEKMEKÖY MACROCENTER","address":"Nişantepe Mah. Alemdağ Cad. No:68 ÇEKMEKÖY/İSTANBUL","city":"İSTANBUL","lat":41.033695,"lng":29.180592}
+  ];
+
+  // ── HAVERSINE UZAKLIK HESABI ──────────────────────────────────────────────
+  function haversine(lat1, lng1, lat2, lng2) {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 +
+              Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
+              Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  // ── ANA FONKSİYON ────────────────────────────────────────────────────────
+  function findNearest() {
+    const btn     = document.getElementById('findBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+    const errorEl = document.getElementById('errorMsg');
+    const card    = document.getElementById('resultCard');
+
+    // Reset
+    errorEl.style.display = 'none';
+    card.style.display    = 'none';
+
+    if (!navigator.geolocation) {
+      showError('Tarayıcınız konum servisini desteklemiyor. Lütfen güncel bir tarayıcı kullanın.');
+      return;
+    }
+
+    // Loading state
+    btn.disabled = true;
+    spinner.style.display = 'block';
+    btnText.textContent   = 'Konum alınıyor…';
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude: userLat, longitude: userLng } = position.coords;
+
+        // En yakın mağazayı bul
+        let nearest = null;
+        let minDist = Infinity;
+
+        STORES.forEach(store => {
+          const d = haversine(userLat, userLng, store.lat, store.lng);
+          if (d < minDist) { minDist = d; nearest = store; }
+        });
+
+        // Sonucu göster
+        showResult(nearest, minDist, userLat, userLng);
+
+        // Butonu sıfırla
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent   = '🔄 Tekrar Ara';
+      },
+      (err) => {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent   = 'Barbeking\'in En Yakın Migros\'unu Bul!';
+
+        switch(err.code) {
+          case err.PERMISSION_DENIED:
+            showError('Konum izni reddedildi. Lütfen tarayıcı ayarlarından konum erişimine izin verin ve tekrar deneyin.');
+            break;
+          case err.POSITION_UNAVAILABLE:
+            showError('Konumunuz belirlenemedi. Lütfen GPS veya Wi-Fi bağlantınızı kontrol edin.');
+            break;
+          case err.TIMEOUT:
+            showError('Konum alınırken zaman aşımı oluştu. Lütfen tekrar deneyin.');
+            break;
+          default:
+            showError('Bilinmeyen bir hata oluştu. Lütfen tekrar deneyin.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+    );
+  }
+
+  function showResult(store, distKm, userLat, userLng) {
+    document.getElementById('storeName').textContent    = store.name;
+    document.getElementById('storeAddress').textContent = store.address;
+    document.getElementById('storeDistance').textContent =
+      '📏 Size olan uzaklık: ' + (distKm < 1
+        ? Math.round(distKm * 1000) + ' m'
+        : distKm.toFixed(1) + ' km');
+
+    // Google Maps
+    document.getElementById('googleMapsBtn').href =
+      `https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}&travelmode=driving`;
+
+    // Yandex Maps
+    document.getElementById('yandexBtn').href =
+      `https://yandex.com/maps/?rtext=${userLat},${userLng}~${store.lat},${store.lng}&rtt=auto`;
+
+    // Apple Maps (iOS uyumlu)
+    document.getElementById('appleBtn').href =
+      `https://maps.apple.com/?daddr=${store.lat},${store.lng}&dirflg=d`;
+
+    document.getElementById('resultCard').style.display = 'block';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent    = '⚠️ ' + msg;
+    el.style.display  = 'block';
+  }
+</script>
+
+</body>
+</html>
