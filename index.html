@@ -34,9 +34,9 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      background: linear-gradient(135deg, #ff6b35 0%, #e8261e 100%);
-      color: #fff;
-      border: none;
+      background: #111111;
+      color: #FFB347;
+      border: 1.5px solid rgba(255,179,71,0.3);
       border-radius: 50px;
       padding: 18px 36px;
       font-family: 'Inter', sans-serif;
@@ -44,8 +44,8 @@
       font-weight: 700;
       letter-spacing: 0.3px;
       cursor: pointer;
-      box-shadow: 0 8px 30px rgba(232, 38, 30, 0.4);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
       position: relative;
       overflow: hidden;
     }
@@ -54,13 +54,14 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      background: linear-gradient(135deg, rgba(255,179,71,0.08) 0%, transparent 60%);
       border-radius: inherit;
     }
 
     .find-btn:hover {
       transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 12px 40px rgba(232, 38, 30, 0.5);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      border-color: rgba(255,179,71,0.6);
     }
 
     .find-btn:active {
@@ -68,7 +69,9 @@
     }
 
     .find-btn:disabled {
-      background: linear-gradient(135deg, #aaa 0%, #888 100%);
+      background: #2a2a2a;
+      color: #666;
+      border-color: rgba(255,255,255,0.1);
       box-shadow: none;
       cursor: not-allowed;
       transform: none;
@@ -89,8 +92,8 @@
       display: none;
       width: 22px;
       height: 22px;
-      border: 3px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
+      border: 3px solid rgba(255,179,71,0.3);
+      border-top-color: #FFB347;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
@@ -119,8 +122,9 @@
 
     .result-badge {
       display: inline-block;
-      background: linear-gradient(135deg, #ff6b35, #e8261e);
-      color: white;
+      background: #111111;
+      color: #FFB347;
+      border: 1px solid rgba(255,179,71,0.4);
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 1px;
@@ -148,7 +152,7 @@
     .result-distance {
       font-size: 13px;
       font-weight: 600;
-      color: #e8261e;
+      color: #c47f00;
       margin-bottom: 16px;
     }
 
