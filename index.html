@@ -14,8 +14,9 @@
     }
 
     html, body {
-      overflow-x: hidden;
+      overflow: hidden;
       width: 100%;
+      height: auto;
     }
 
     body {
@@ -268,8 +269,6 @@
       </a>
     </div>
   </div>
-
-  <div class="bk-note">Barbeking'i yakınınızdaki mağazada bulun!</div>
 
 </div>
 
@@ -531,7 +530,7 @@
 
   // ── WİX IFRAME OTOMATİK YÜKSEKLİK ──────────────────────────────────────
   function resizeFrame() {
-    const h = document.body.scrollHeight + 20;
+    const h = document.documentElement.scrollHeight + 5;
     if (window.Wix) {
       window.Wix.setHeight(h);
     } else {
@@ -539,9 +538,9 @@
     }
   }
 
-  // Sayfa yüklenince ve her 300ms'de boyutu bildir
   window.addEventListener('load', resizeFrame);
-  setTimeout(resizeFrame, 500);
+  setTimeout(resizeFrame, 300);
+  setTimeout(resizeFrame, 800);
 </script>
 
 </body>
