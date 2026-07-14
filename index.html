@@ -17,9 +17,8 @@
       font-family: 'Inter', sans-serif;
       background: transparent;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      min-height: 100vh;
       padding: 16px;
     }
 
@@ -503,13 +502,29 @@
       `https://maps.apple.com/?daddr=${store.lat},${store.lng}&dirflg=d`;
 
     document.getElementById('resultCard').style.display = 'block';
+    resizeFrame();
   }
 
   function showError(msg) {
     const el = document.getElementById('errorMsg');
     el.textContent    = '⚠️ ' + msg;
     el.style.display  = 'block';
+    resizeFrame();
   }
+
+  // ── WİX IFRAME OTOMATİK YÜKSEKLİK ──────────────────────────────────────
+  function resizeFrame() {
+    const h = document.body.scrollHeight + 20;
+    if (window.Wix) {
+      window.Wix.setHeight(h);
+    } else {
+      window.parent.postMessage({ type: 'setHeight', height: h }, '*');
+    }
+  }
+
+  // Sayfa yüklenince ve her 300ms'de boyutu bildir
+  window.addEventListener('load', resizeFrame);
+  setTimeout(resizeFrame, 500);
 </script>
 
 </body>
