@@ -425,7 +425,7 @@
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
-  // ── ANA FONKSİYON ────────────────────────────────────────────────────────
+  // ── ANA FONKSİYON ────────────────────────────────────────────────
   function findNearest() {
     const btn     = document.getElementById('findBtn');
     const spinner = document.getElementById('spinner');
@@ -437,59 +437,55 @@
     errorEl.style.display = 'none';
     card.style.display    = 'none';
 
-    if (!navigator.geolocation) {
-      showError('Tarayıcınız konum servisini desteklemiyor. Lütfen güncel bir tarayıcı kullanın.');
-      return;
-    }
-
     // Loading state
     btn.disabled = true;
     spinner.style.display = 'block';
     btnText.textContent   = 'Konum alınıyor…';
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude: userLat, longitude: userLng } = position.coords;
+    // Wix Velo'dan konum iste
+    window.parent.postMessage('getLocation', '*');
 
-        // En yakın mağazayı bul
-        let nearest = null;
-        let minDist = Infinity;
-
-        STORES.forEach(store => {
-          const d = haversine(userLat, userLng, store.lat, store.lng);
-          if (d < minDist) { minDist = d; nearest = store; }
-        });
-
-        // Sonucu göster
-        showResult(nearest, minDist, userLat, userLng);
-
-        // Butonu sıfırla
-        btn.disabled = false;
-        spinner.style.display = 'none';
-        btnText.textContent   = '📍 Tekrar Ara';
-      },
-      (err) => {
-        btn.disabled = false;
-        spinner.style.display = 'none';
-        btnText.textContent   = '📍 Size En Yakın Barbeking Noktası';
-
-        switch(err.code) {
-          case err.PERMISSION_DENIED:
-            showError('Konum izni reddedildi. Lütfen tarayıcı ayarlarından konum erişimine izin verin ve tekrar deneyin.');
-            break;
-          case err.POSITION_UNAVAILABLE:
-            showError('Konumunuz belirlenemedi. Lütfen GPS veya Wi-Fi bağlantınızı kontrol edin.');
-            break;
-          case err.TIMEOUT:
-            showError('Konum alınırken zaman aşımı oluştu. Lütfen tekrar deneyin.');
-            break;
-          default:
-            showError('Bilinmeyen bir hata oluştu. Lütfen tekrar deneyin.');
-        }
-      },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
-    );
+    // Zaman aşımı
+    locationTimeout = setTimeout(function() {
+      btn.disabled = false;
+      spinner.style.display = 'none';
+      btnText.textContent = '📍 Size En Yakın Barbeking Noktası';
+      showError('Konum alınamadı. Lütfen tarayıcı konum iznini kontrol edip tekrar deneyin.');
+    }, 12000);
   }
+
+  var locationTimeout;
+
+  // ── VELO'DAN KONUM AL ────────────────────────────────────────────
+  window.addEventListener('message', function(e) {
+    var data = e.data;
+    if (!data || data.type === 'setHeight') return;
+
+    var btn     = document.getElementById('findBtn');
+    var spinner = document.getElementById('spinner');
+    var btnText = document.getElementById('btnText');
+
+    clearTimeout(locationTimeout);
+    btn.disabled = false;
+    spinner.style.display = 'none';
+
+    if (data.error) {
+      btnText.textContent = '📍 Size En Yakın Barbeking Noktası';
+      showError('Konum izni reddedildi. Lütfen tarayıcı ayarlarından konum erişimine izin verin.');
+      return;
+    }
+
+    if (data.lat && data.lng) {
+      var nearest = null;
+      var minDist = Infinity;
+      STORES.forEach(function(store) {
+        var d = haversine(data.lat, data.lng, store.lat, store.lng);
+        if (d < minDist) { minDist = d; nearest = store; }
+      });
+      showResult(nearest, minDist, data.lat, data.lng);
+      btnText.textContent = '📍 Tekrar Ara';
+    }
+  });
 
   function showResult(store, distKm, userLat, userLng) {
     document.getElementById('storeName').textContent    = store.name;
