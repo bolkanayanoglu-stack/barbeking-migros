@@ -213,7 +213,7 @@
     /* ── BARBEKING NOTU ── */
     .bk-note {
       margin-top: 14px;
-      font-size: 11px;
+      font-size: 13px;
       color: #aaa;
       font-style: italic;
     }
@@ -224,7 +224,7 @@
 <div class="widget-container">
 
   <button class="find-btn" id="findBtn" onclick="findNearest()">
-    <span id="btnText">📍 Barbeking İçin En Yakın Migros</span>
+    <span id="btnText">📍 Size En Yakın Barbeking Noktası</span>
     <span class="spinner" id="spinner"></span>
   </button>
 
@@ -249,7 +249,7 @@
     </div>
   </div>
 
-  <div class="bk-note">Barbeking, size en yakın Migros ve Macrocenter'da!</div>
+  <div class="bk-note">Barbeking'i yakınınızdaki mağazada bulun!</div>
 
 </div>
 
@@ -458,7 +458,7 @@
       (err) => {
         btn.disabled = false;
         spinner.style.display = 'none';
-        btnText.textContent   = '📍 Barbeking İçin En Yakın Migros';
+        btnText.textContent   = '📍 Size En Yakın Barbeking Noktası';
 
         switch(err.code) {
           case err.PERMISSION_DENIED:
