@@ -224,8 +224,7 @@
 <div class="widget-container">
 
   <button class="find-btn" id="findBtn" onclick="findNearest()">
-    <span class="btn-icon">📍</span>
-    <span id="btnText">Barbeking'in En Yakın Migrос'unu Bul!</span>
+    <span id="btnText">📍 Barbeking İçin En Yakın Migros</span>
     <span class="spinner" id="spinner"></span>
   </button>
 
@@ -454,12 +453,12 @@
         // Butonu sıfırla
         btn.disabled = false;
         spinner.style.display = 'none';
-        btnText.textContent   = '🔄 Tekrar Ara';
+        btnText.textContent   = '📍 Tekrar Ara';
       },
       (err) => {
         btn.disabled = false;
         spinner.style.display = 'none';
-        btnText.textContent   = 'Barbeking\'in En Yakın Migros\'unu Bul!';
+        btnText.textContent   = '📍 Barbeking İçin En Yakın Migros';
 
         switch(err.code) {
           case err.PERMISSION_DENIED:
