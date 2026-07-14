@@ -251,17 +251,6 @@
     <div class="result-store-name" id="storeName"></div>
     <div class="result-address" id="storeAddress"></div>
     <div class="result-distance" id="storeDistance"></div>
-
-    <div class="nav-buttons">
-      <button class="nav-btn nav-btn-google" onclick="openMap('google')">
-        🗺️ Google Maps ile Yol Tarifi Al
-      </button>
-      <button class="nav-btn nav-btn-yandex" onclick="openMap('yandex')">
-        🧭 Yandex Haritalar ile Git
-      </button>
-      <button class="nav-btn nav-btn-apple" onclick="openMap('apple')">
-        🍎 Apple Maps ile Git
-      </button>
     </div>
   </div>
 
@@ -496,26 +485,16 @@
         ? Math.round(distKm * 1000) + ' m'
         : distKm.toFixed(1) + ' km');
 
-    // URL'leri global değişkende sakla
-    window._mapUrls = {
+    // Harita URL'lerini Velo'ya gönder
+    window.parent.postMessage({
+      action: 'mapUrls',
       google: 'https://www.google.com/maps/dir/?api=1&destination=' + store.lat + ',' + store.lng + '&travelmode=driving',
       yandex: 'https://yandex.com/maps/?rtext=' + userLat + ',' + userLng + '~' + store.lat + ',' + store.lng + '&rtt=auto',
       apple:  'https://maps.apple.com/?daddr=' + store.lat + ',' + store.lng + '&dirflg=d'
-    };
+    }, '*');
 
     document.getElementById('resultCard').style.display = 'block';
     resizeFrame();
-  }
-
-  function openMap(type) {
-    var url = window._mapUrls && window._mapUrls[type];
-    if (!url) return;
-    // Önce direkt dene
-    var win = window.open(url, '_blank', 'noopener,noreferrer');
-    // Açılamazsa Velo ana pencereden açsın
-    if (!win) {
-      window.parent.postMessage({ action: 'navigate', url: url }, '*');
-    }
   }
 
   function showError(msg) {
