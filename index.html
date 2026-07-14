@@ -510,8 +510,18 @@
   function openMap(type) {
     var url = window._mapUrls && window._mapUrls[type];
     if (!url) return;
-    // Velo'ya mesaj gönder, Velo linki açsın
-    window.parent.postMessage({ action: 'navigate', url: url }, '*');
+    // Kullanıcı tıklamasıyla doğrudan aç
+    var win = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!win) {
+      // Popup blocker varsa geici link oluştur
+      var a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   }
 
   function showError(msg) {
