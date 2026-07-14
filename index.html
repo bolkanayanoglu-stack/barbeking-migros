@@ -253,15 +253,15 @@
     <div class="result-distance" id="storeDistance"></div>
 
     <div class="nav-buttons">
-      <a class="nav-btn nav-btn-google" id="googleMapsBtn" href="#" target="_blank" rel="noopener">
+      <button class="nav-btn nav-btn-google" onclick="openMap('google')">
         🗺️ Google Maps ile Yol Tarifi Al
-      </a>
-      <a class="nav-btn nav-btn-yandex" id="yandexBtn" href="#" target="_blank" rel="noopener">
+      </button>
+      <button class="nav-btn nav-btn-yandex" onclick="openMap('yandex')">
         🧭 Yandex Haritalar ile Git
-      </a>
-      <a class="nav-btn nav-btn-apple" id="appleBtn" href="#" target="_blank" rel="noopener">
+      </button>
+      <button class="nav-btn nav-btn-apple" onclick="openMap('apple')">
         🍎 Apple Maps ile Git
-      </a>
+      </button>
     </div>
   </div>
 
@@ -496,20 +496,22 @@
         ? Math.round(distKm * 1000) + ' m'
         : distKm.toFixed(1) + ' km');
 
-    // Google Maps
-    document.getElementById('googleMapsBtn').href =
-      `https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}&travelmode=driving`;
-
-    // Yandex Maps
-    document.getElementById('yandexBtn').href =
-      `https://yandex.com/maps/?rtext=${userLat},${userLng}~${store.lat},${store.lng}&rtt=auto`;
-
-    // Apple Maps (iOS uyumlu)
-    document.getElementById('appleBtn').href =
-      `https://maps.apple.com/?daddr=${store.lat},${store.lng}&dirflg=d`;
+    // URL'leri global değişkende sakla
+    window._mapUrls = {
+      google: 'https://www.google.com/maps/dir/?api=1&destination=' + store.lat + ',' + store.lng + '&travelmode=driving',
+      yandex: 'https://yandex.com/maps/?rtext=' + userLat + ',' + userLng + '~' + store.lat + ',' + store.lng + '&rtt=auto',
+      apple:  'https://maps.apple.com/?daddr=' + store.lat + ',' + store.lng + '&dirflg=d'
+    };
 
     document.getElementById('resultCard').style.display = 'block';
     resizeFrame();
+  }
+
+  function openMap(type) {
+    var url = window._mapUrls && window._mapUrls[type];
+    if (!url) return;
+    // Velo'ya mesaj gönder, Velo linki açsın
+    window.parent.postMessage({ action: 'navigate', url: url }, '*');
   }
 
   function showError(msg) {
